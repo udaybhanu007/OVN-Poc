@@ -24,3 +24,16 @@ func GetUser(userId int64) (*User, *helpers.ApplicationError) {
 		Code:       "not_found",
 	}
 }
+
+func AddUser(user *User) (map[int64]*User, *helpers.ApplicationError) {
+	if user != nil {
+		users[4] = user
+		//	append(users, ,4: {ID: 4, FirstName: "fourth first name", LastName: "fourth Last name", Email: "fourthEmail@abc.com"}})
+		return users, nil
+	}
+	return nil, &helpers.ApplicationError{
+		Message:    fmt.Sprintf("user %v not valid", user),
+		StatusCode: http.StatusNotFound,
+		Code:       "not_found",
+	}
+}
