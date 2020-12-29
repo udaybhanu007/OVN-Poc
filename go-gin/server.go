@@ -23,15 +23,19 @@ func main() {
 
 	server.Use(gin.Recovery(), middlewares.Logger())
 
-	server.GET("/get-user", func(ctx *gin.Context) {
+	subRouterAuthenticated := server.Group("/user", gin.BasicAuth(gin.Accounts{
+		"admin": "adminpass",
+	}))
+
+	subRouterAuthenticated.GET("/get-user", func(ctx *gin.Context) {
 		ctx.JSON(200, userController.FindAll())
 	})
 
-	server.POST("/add-user", func(ctx *gin.Context) {
+	subRouterAuthenticated.POST("/add-user", func(ctx *gin.Context) {
 		ctx.JSON(200, userController.Save(ctx))
 	})
 
-	server.DELETE("/delete-user/:id", func(ctx *gin.Context) {
+	subRouterAuthenticated.DELETE("/delete-user/:id", func(ctx *gin.Context) {
 		fmt.Println(strconv.Atoi(ctx.Param("id")))
 		id, err := strconv.Atoi(ctx.Param("id"))
 		if err == nil {
@@ -41,7 +45,7 @@ func main() {
 		fmt.Println(err)
 	})
 
-	server.PUT("/update-user", func(ctx *gin.Context) {
+	subRouterAuthenticated.PUT("/update-user", func(ctx *gin.Context) {
 		ctx.JSON(200, userController.UpdateRecord(ctx))
 	})
 
