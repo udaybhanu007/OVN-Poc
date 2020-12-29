@@ -2,13 +2,12 @@ package app
 
 import (
 	"demo/controllers"
+	"demo/helpers"
 	"net/http"
 )
 
 func StartApp() {
-	//	http.HandleFunc("/users", controllers.GetUser)
-	http.HandleFunc("/adduser", controllers.AddUser)
-	if err := http.ListenAndServe("0.0.0.0:4200", nil); err != nil {
-		panic(err)
-	}
+	http.HandleFunc("/users", controllers.GetUser)
+	http.Handle("/adduser", helpers.RootHandler(controllers.AddUser))
+	ConfigureAndStartServer()
 }

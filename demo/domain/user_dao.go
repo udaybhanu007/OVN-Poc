@@ -25,15 +25,10 @@ func GetUser(userId int64) (*User, *helpers.ApplicationError) {
 	}
 }
 
-func AddUser(user *User) (map[int64]*User, *helpers.ApplicationError) {
-	if user != nil {
+func AddUser(user *User) map[int64]*User {
+	if len(user.FirstName) > 0 && len(user.LastName) > 0 && len(user.Email) > 0 {
 		users[4] = user
-		//	append(users, ,4: {ID: 4, FirstName: "fourth first name", LastName: "fourth Last name", Email: "fourthEmail@abc.com"}})
-		return users, nil
+		return users
 	}
-	return nil, &helpers.ApplicationError{
-		Message:    fmt.Sprintf("user %v not valid", user),
-		StatusCode: http.StatusNotFound,
-		Code:       "not_found",
-	}
+	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"demo/helpers"
 	"demo/services"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -35,29 +34,22 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 	response.Write(jsonValue)
 }
 
-func AddUser(response http.ResponseWriter, request *http.Request) {
+func AddUser(response http.ResponseWriter, request *http.Request) error {
 	var user domain.User
 	userMap := make(map[int64]*domain.User)
-	body, err := ioutil.ReadAll(request.Body)
-	if err != nil {
-		apiErr := &helpers.ApplicationError{
-			Message:    "userId must be number",
-			StatusCode: http.StatusBadRequest,
-			Code:       "bad_request",
-		}
-		jsonValue, _ := json.Marshal(apiErr)
-		response.WriteHeader(apiErr.StatusCode)
-		response.Write(jsonValue)
-		return
+	decoder := json.NewDecoder(request.Body)
+
+	erro := decoder.Decode(&user)
+	if erro != nil {
+		return helpers.NewHTTPError(erro, "Bad request : invalid JSON.", 400)
 	}
-	json.Unmarshal(body, &user)
-	userMap, apiErr := services.AddUser(&user)
-	if apiErr != nil {
-		jsonValue, _ := json.Marshal(apiErr)
-		response.WriteHeader(apiErr.StatusCode)
-		response.Write(jsonValue)
-		return
+	userMap = services.AddUser(&user)
+	// Custom error
+	if len(userMap) == 0 {
+		return helpers.NewHTTPError(nil, "json data unavailable", 400)
 	}
+
 	jsonValue, _ := json.Marshal(userMap)
 	response.Write(jsonValue)
+	return nil
 }
