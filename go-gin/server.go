@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"golang-gin-poc/controller"
 	"golang-gin-poc/middlewares"
 	"golang-gin-poc/service"
 	"io"
 	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,26 +25,46 @@ func main() {
 		"admin": "adminpass",
 	}))
 
-	subRouterAuthenticated.GET("/get-user", func(ctx *gin.Context) {
-		ctx.JSON(200, userController.FindAll())
+	subRouterAuthenticated.GET("/get-users", func(ctx *gin.Context) {
+		user, apiErr := userController.FindAll()
+		if apiErr != nil {
+			ctx.JSON(apiErr.StatusCode, apiErr)
+		}
+		ctx.JSON(200, user)
+	})
+
+	subRouterAuthenticated.GET("/get-user/:id", func(ctx *gin.Context) {
+		user, apiErr := userController.FindUser(ctx)
+		if apiErr != nil {
+			ctx.JSON(apiErr.StatusCode, apiErr)
+		}
+		ctx.JSON(200, user)
 	})
 
 	subRouterAuthenticated.POST("/add-user", func(ctx *gin.Context) {
-		ctx.JSON(200, userController.Save(ctx))
+		res, apiErr := userController.Save(ctx)
+		if apiErr != nil {
+			ctx.JSON(apiErr.StatusCode, apiErr)
+		}
+		ctx.JSON(200, res)
 	})
 
 	subRouterAuthenticated.DELETE("/delete-user/:id", func(ctx *gin.Context) {
-		fmt.Println(strconv.Atoi(ctx.Param("id")))
-		id, err := strconv.Atoi(ctx.Param("id"))
-		if err == nil {
-			fmt.Println("inside")
-			ctx.JSON(200, userController.DeleteRecord(id))
+
+		res, apiErr := userController.DeleteRecord(ctx)
+		if apiErr != nil {
+			ctx.JSON(apiErr.StatusCode, apiErr)
 		}
-		fmt.Println(err)
+		ctx.JSON(200, res)
+
 	})
 
-	subRouterAuthenticated.PUT("/update-user", func(ctx *gin.Context) {
-		ctx.JSON(200, userController.UpdateRecord(ctx))
+	subRouterAuthenticated.PUT("/update-user/:id", func(ctx *gin.Context) {
+		res, apiErr := userController.UpdateRecord(ctx)
+		if apiErr != nil {
+			ctx.JSON(apiErr.StatusCode, apiErr)
+		}
+		ctx.JSON(200, res)
 	})
 
 	server.Run(":8080")
