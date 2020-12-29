@@ -24,3 +24,11 @@ func GetUser(userId int64) (*User, *helpers.ApplicationError) {
 		Code:       "not_found",
 	}
 }
+
+func AddUser(user *User) map[int64]*User {
+	if len(user.FirstName) > 0 && len(user.LastName) > 0 && len(user.Email) > 0 {
+		users[4] = user
+		return users
+	}
+	return nil
+}
