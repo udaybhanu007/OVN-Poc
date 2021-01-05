@@ -5,6 +5,7 @@ import (
 	"demo/controllers"
 	"demo/domain"
 	"demo/helpers"
+	"errors"
 
 	"encoding/json"
 	"net/http"
@@ -19,13 +20,10 @@ func TestAddUser(t *testing.T) {
 		LastName:  "Soy",
 		Email:     "Rabb@email",
 	}
-	jsonUser, _ := json.Marshal(user)
-	request, err := http.NewRequest("POST", "/adduser", bytes.NewBuffer(jsonUser))
+	response, err := makeRequestToAddUser(*user)
 	if err != nil {
 		t.Fatal(err)
 	}
-	response := httptest.NewRecorder()
-	helpers.RootHandler(controllers.AddUser).ServeHTTP(response, request)
 	if response.Result().StatusCode != 200 {
 		t.Errorf("expected status %v but got %v", 200, response.Result().StatusCode)
 	}
@@ -50,15 +48,41 @@ func TestAddUserTableDrivenTest(t *testing.T) {
 		},
 	}
 	for _, s := range testCases {
-		jsonUser, _ := json.Marshal(s.input)
-		request, err := http.NewRequest("POST", "/adduser", bytes.NewBuffer(jsonUser))
+		response, err := makeRequestToAddUser(domain.User(s.input))
 		if err != nil {
 			t.Fatal(err)
 		}
-		response := httptest.NewRecorder()
-		helpers.RootHandler(controllers.AddUser).ServeHTTP(response, request)
 		if response.Result().StatusCode != s.expect {
 			t.Errorf("expected status %v but got %v", 200, response.Result().StatusCode)
 		}
 	}
+}
+
+func BenchmarkAddUser(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		user := &domain.User{
+			ID:        i + 7,
+			FirstName: "acd",
+			LastName:  "Soy",
+			Email:     "Rabb@email",
+		}
+		response, err := makeRequestToAddUser(*user)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if response.Result().StatusCode != 200 {
+			b.Errorf("expected status %v but got %v", 200, response.Result().StatusCode)
+		}
+	}
+}
+
+func makeRequestToAddUser(user domain.User) (response *httptest.ResponseRecorder, APIerror error) {
+	jsonUser, _ := json.Marshal(user)
+	request, err := http.NewRequest("POST", "/adduser", bytes.NewBuffer(jsonUser))
+	if err != nil {
+		return nil, errors.New("fatal server error")
+	}
+	response = httptest.NewRecorder()
+	helpers.RootHandler(controllers.AddUser).ServeHTTP(response, request)
+	return response, nil
 }
