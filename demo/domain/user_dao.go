@@ -14,6 +14,12 @@ var (
 	}
 )
 
+var DBInstance UserDB
+
+func init() {
+	DBInstance = UserValidate{}
+}
+
 func GetUser(userId int64) (*User, *helpers.ApplicationError) {
 	if user := users[userId]; user != nil {
 		return user, nil
@@ -26,6 +32,10 @@ func GetUser(userId int64) (*User, *helpers.ApplicationError) {
 }
 
 func AddUser(user *User) map[int64]*User {
+	//{"id": 1, "first_name": "last user", "last_name": "last user", "email": "lastuserEmail@abc.com"}
+	if DBInstance.userExists(user.Email) {
+		return nil
+	}
 	if len(user.FirstName) > 0 && len(user.LastName) > 0 && len(user.Email) > 0 {
 		users[4] = user
 		return users
