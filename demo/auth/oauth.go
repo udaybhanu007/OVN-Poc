@@ -22,9 +22,8 @@ var (
 	}
 	// oauthConf oauth2.Config
 	// random string for oauth2 API calls to protect against CSRF
-	oauthStateString    = "jayanthi-github-oAuth"
-	personalAccessToken = "135b86b0c9a940f7ea5da42239346d80e85462ea"
-	code                string
+	oauthStateString = "jayanthi-github-oAuth"
+	code             string
 )
 
 const htmlIndex = `<html><body>
