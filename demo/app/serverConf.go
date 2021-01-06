@@ -6,7 +6,7 @@ import (
 
 func ConfigureAndStartServer() {
 	server := http.Server{
-		Addr:    "0.0.0.0:4200",
+		Addr:    "localhost:4200", // DO NOT UPDATE
 		Handler: nil,
 	}
 	server.ListenAndServe()
