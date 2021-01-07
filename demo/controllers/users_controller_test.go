@@ -1,26 +1,31 @@
-package controllers_test
+package controllers
 
 import (
 	"bytes"
-	"demo/controllers"
 	"demo/domain"
 	"demo/helpers"
+	"demo/mock"
 	"errors"
+	"strconv"
 
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	gomock "github.com/golang/mock/gomock"
 )
+
+var MockAuthInterface mock.MockAuthInterface
 
 func TestAddUser(t *testing.T) {
 	user := &domain.User{
 		ID:        7,
 		FirstName: "acd",
 		LastName:  "Soy",
-		Email:     "Rabb@email",
+		Email:     "app@email",
 	}
-	response, err := makeRequestToAddUser(*user)
+	response, err := makeRequestToAddUser(*user, t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,11 +40,11 @@ func TestAddUserTableDrivenTest(t *testing.T) {
 		expect int
 	}{
 		{
-			input:  domain.User{ID: 7, FirstName: "acd", LastName: "Soy", Email: "Rabb@email"},
+			input:  domain.User{ID: 7, FirstName: "acd", LastName: "Soy", Email: "Apple@email"},
 			expect: 200,
 		},
 		{
-			input:  domain.User{ID: 7, FirstName: "", LastName: "Soy", Email: "Rabb@email"},
+			input:  domain.User{ID: 7, FirstName: "", LastName: "Soy", Email: "carrot@email"},
 			expect: 400,
 		},
 		{
@@ -48,7 +53,8 @@ func TestAddUserTableDrivenTest(t *testing.T) {
 		},
 	}
 	for _, s := range testCases {
-		response, err := makeRequestToAddUser(domain.User(s.input))
+		user := domain.User(s.input)
+		response, err := makeRequestToAddUser(user, t)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -64,9 +70,9 @@ func BenchmarkAddUser(b *testing.B) {
 			ID:        i + 7,
 			FirstName: "acd",
 			LastName:  "Soy",
-			Email:     "Rabb@email",
+			Email:     "Rabb" + strconv.Itoa(i) + "@email",
 		}
-		response, err := makeRequestToAddUser(*user)
+		response, err := makeRequestToAddUser(*user, b)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -76,13 +82,20 @@ func BenchmarkAddUser(b *testing.B) {
 	}
 }
 
-func makeRequestToAddUser(user domain.User) (response *httptest.ResponseRecorder, APIerror error) {
+func makeRequestToAddUser(user domain.User, t testing.TB) (response *httptest.ResponseRecorder, APIerror error) {
+	// mocking for Authentication
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+	MockAuthInterface := mock.NewMockAuthInterface(controller)
+	AuthInstance = MockAuthInterface
+
 	jsonUser, _ := json.Marshal(user)
 	request, err := http.NewRequest("POST", "/adduser", bytes.NewBuffer(jsonUser))
 	if err != nil {
 		return nil, errors.New("fatal server error")
 	}
 	response = httptest.NewRecorder()
-	helpers.RootHandler(controllers.AddUser).ServeHTTP(response, request)
+	MockAuthInterface.EXPECT().IsAuthorized(response, request).Return(true)
+	helpers.RootHandler(AddUser).ServeHTTP(response, request)
 	return response, nil
 }

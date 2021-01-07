@@ -8,11 +8,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
+var AuthInstance auth.AuthInterface
+
+func init() {
+	AuthInstance = auth.UserAuthentication{}
+}
+
 func GetUser(response http.ResponseWriter, request *http.Request) {
-	if isAuthorized(response, request) == false {
+	if AuthInstance.IsAuthorized(response, request) == false {
 		return
 	}
 	userID, err := strconv.ParseInt(request.URL.Query().Get("userId"), 10, 64)
@@ -40,7 +45,7 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 }
 
 func AddUser(response http.ResponseWriter, request *http.Request) error {
-	if isAuthorized(response, request) == false {
+	if AuthInstance.IsAuthorized(response, request) == false {
 		return nil
 	}
 	var user domain.User
@@ -60,20 +65,4 @@ func AddUser(response http.ResponseWriter, request *http.Request) error {
 	jsonValue, _ := json.Marshal(userMap)
 	response.Write(jsonValue)
 	return nil
-}
-
-func isAuthorized(response http.ResponseWriter, request *http.Request) bool {
-	if request.Header.Get("Authorization") == "" ||
-		auth.ValidateToken(strings.Split(request.Header.Get("Authorization"), " ")[1]) == false {
-		apiErr := &helpers.ApplicationError{
-			Message:    "You are not authorized to access this resource.",
-			StatusCode: http.StatusUnauthorized,
-			Code:       "401",
-		}
-		jsonValue, _ := json.Marshal(apiErr)
-		response.WriteHeader(apiErr.StatusCode)
-		response.Write(jsonValue)
-		return false
-	}
-	return true
 }

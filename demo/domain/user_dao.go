@@ -33,9 +33,10 @@ func GetUser(userId int64) (*User, *helpers.ApplicationError) {
 
 func AddUser(user *User) map[int64]*User {
 	//{"id": 1, "first_name": "last user", "last_name": "last user", "email": "lastuserEmail@abc.com"}
-	if DBInstance.userExists(user.Email) {
+	if len(user.Email) > 0 && DBInstance.UserExists(user.Email) {
 		return nil
 	}
+
 	if len(user.FirstName) > 0 && len(user.LastName) > 0 && len(user.Email) > 0 {
 		users[4] = user
 		return users
