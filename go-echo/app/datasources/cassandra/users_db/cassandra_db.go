@@ -11,7 +11,6 @@ var (
 )
 
 func ConnectDB(configuration config.Configuration) {
-	//clusterHost := configuration.DBConfig.CassandraHost
 
 	cluster := gocql.NewCluster(configuration.DbConfig.CassandraHost)
 

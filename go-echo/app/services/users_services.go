@@ -44,9 +44,7 @@ func (s *usersService) GetUser(UUID gocql.UUID) (*domain.User, error) {
 	if err := domain.UsersDaoService.Get(userObj); err != nil {
 		return nil, err
 	}
-	// if err := dao.Get(); err != nil {
-	// 	return nil, err
-	// }
+
 	return userObj, nil
 }
 
@@ -56,26 +54,10 @@ func (s *usersService) UpdateUser(user domain.User) (*helpers.NotificationMessag
 		return nil, err
 	}
 
-	// if isPartial {
-	// 	if user.FirstName != "" {
-	// 		currentUser.FirstName = user.FirstName
-	// 	}
-
-	// 	if user.LastName != "" {
-	// 		currentUser.LastName = user.LastName
-	// 	}
-
-	// 	if user.Email != "" {
-	// 		currentUser.Email = user.Email
-	// 	}
-	// } else {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
-	// currentUser.FirstName = user.FirstName
-	// currentUser.LastName = user.LastName
-	// currentUser.Email = user.Email
-	//}
+
 	if err := domain.UsersDaoService.Update(&user); err != nil {
 		return nil, err
 	}
