@@ -7,6 +7,7 @@ import (
 	"go-echo-poc/app/helpers"
 	"go-echo-poc/app/services"
 	"net/http"
+	"strconv"
 
 	"github.com/gocql/gocql"
 	"github.com/labstack/echo/v4"
@@ -27,13 +28,16 @@ func CreateUser(c echo.Context) error {
 func GetUser(c echo.Context) error {
 	UUID, uidErr := gocql.ParseUUID(c.Param("id"))
 	if uidErr != nil {
+		services.LogActivity(c.Param("id"), "GET: /get-user/:id", strconv.Itoa(http.StatusBadRequest), "Invalid UUID")
 		return helpers.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid UUID")
 	}
 
 	user, getErr := services.UsersService.GetUser(UUID)
 	if getErr != nil {
+		services.LogActivity(c.Param("id"), "GET: /get-user/:id", strconv.Itoa(http.StatusBadRequest), getErr.Error())
 		return getErr
 	}
+	services.LogActivity(c.Param("id"), "GET: /get-user/:id", strconv.Itoa(http.StatusOK), "Success! User found.")
 	return c.JSON(http.StatusOK, user)
 }
 
