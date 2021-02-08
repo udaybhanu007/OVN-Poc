@@ -25,7 +25,7 @@ type Activity struct {
 }
 
 const (
-	topic         = "audit"
+	topic         = "test-cassandra"
 	brokerAddress = "localhost:9092"
 )
 

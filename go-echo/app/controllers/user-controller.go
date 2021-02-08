@@ -3,9 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"go-echo-poc/app/domain"
-	"go-echo-poc/app/helpers"
+	"go-echo-poc/app/model"
 	"go-echo-poc/app/services"
+	"go-echo-poc/app/utils"
 	"net/http"
 	"strconv"
 
@@ -14,9 +14,9 @@ import (
 )
 
 func CreateUser(c echo.Context) error {
-	user := new(domain.User)
+	user := new(model.User)
 	if err := c.Bind(&user); err != nil {
-		return helpers.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid Json")
+		return utils.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid Json")
 	}
 	result, saveError := services.UsersService.CreateUser(*user)
 	if saveError != nil {
@@ -29,7 +29,7 @@ func GetUser(c echo.Context) error {
 	UUID, uidErr := gocql.ParseUUID(c.Param("id"))
 	if uidErr != nil {
 		services.LogActivity(c.Param("id"), "GET: /get-user/:id", strconv.Itoa(http.StatusBadRequest), "Invalid UUID")
-		return helpers.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid UUID")
+		return utils.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid UUID")
 	}
 
 	user, getErr := services.UsersService.GetUser(UUID)
@@ -44,7 +44,7 @@ func GetUser(c echo.Context) error {
 func UpdateUser(c echo.Context) error {
 	UUID, uidErr := gocql.ParseUUID(c.Param("uid"))
 	if uidErr == nil {
-		var user domain.User
+		var user model.User
 		err := json.NewDecoder(c.Request().Body).Decode(&user)
 		if err != nil {
 			return err
@@ -61,14 +61,14 @@ func UpdateUser(c echo.Context) error {
 		}
 		return c.JSON(http.StatusOK, result)
 	} else {
-		return helpers.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid UUID")
+		return utils.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid UUID")
 	}
 }
 
 func DeleteUser(c echo.Context) error {
 	UUID, uidErr := gocql.ParseUUID(c.Param("uid"))
 	if uidErr != nil {
-		return helpers.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid UUID")
+		return utils.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid UUID")
 	}
 	fmt.Println("delete controller start")
 	user, getErr := services.UsersService.DeleteUser(UUID)

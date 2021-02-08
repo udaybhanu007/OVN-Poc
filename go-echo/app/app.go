@@ -2,7 +2,7 @@ package app
 
 import (
 	"go-echo-poc/app/controllers"
-	"go-echo-poc/app/helpers"
+	"go-echo-poc/app/utils"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -29,7 +29,7 @@ func StartApplication() {
 			msg  string
 		)
 
-		if he, ok := err.(*helpers.HttpError); ok {
+		if he, ok := err.(*utils.HttpError); ok {
 			code = he.Code
 			key = he.Key
 			msg = he.Message
@@ -44,7 +44,7 @@ func StartApplication() {
 					c.Logger().Error(err)
 				}
 			} else {
-				err := c.JSON(code, helpers.NewHTTPError(code, key, msg))
+				err := c.JSON(code, utils.NewHTTPError(code, key, msg))
 				if err != nil {
 					c.Logger().Error(err)
 				}

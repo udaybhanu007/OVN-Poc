@@ -1,12 +1,17 @@
-package domain
+package dao
 
 import (
 	"net/http"
 
 	"go-echo-poc/app/datasources/cassandra/users_db"
-	"go-echo-poc/app/helpers"
+	"go-echo-poc/app/model"
+	"go-echo-poc/app/utils"
 
 	"github.com/gocql/gocql"
+)
+
+var (
+	UsersDaoService usersDaoInterface = &usersDao{}
 )
 
 const (
@@ -16,7 +21,9 @@ const (
 	queryDeleteUser = "DELETE FROM app_users WHERE uid=?"
 )
 
-func (User) Get(user *User) error {
+type usersDao struct{}
+
+func (usersDao) Get(user *model.User) error {
 	if err := users_db.GetSession().Query(queryGetUser, user.Uuid).Scan(
 		&user.FirstName,
 		&user.LastName,
@@ -25,14 +32,14 @@ func (User) Get(user *User) error {
 		&user.Status,
 	); err != nil {
 		if err == gocql.ErrNotFound {
-			return helpers.NewHTTPError(http.StatusNotFound, "error when trying to get current UUID", "User not found")
+			return utils.NewHTTPError(http.StatusNotFound, "error when trying to get current UUID", "User not found")
 		}
-		return helpers.NewHTTPError(http.StatusInternalServerError, "error when trying to get current UUID", err.Error())
+		return utils.NewHTTPError(http.StatusInternalServerError, "error when trying to get current UUID", err.Error())
 	}
 	return nil
 }
 
-func (User) Save(user *User) (*gocql.UUID, error) {
+func (usersDao) Save(user *model.User) (*gocql.UUID, error) {
 	user.Uuid = gocql.TimeUUID()
 
 	if err := users_db.GetSession().Query(queryInsertUser,
@@ -43,28 +50,28 @@ func (User) Save(user *User) (*gocql.UUID, error) {
 		user.Status,
 		user.DateCreated,
 	).Exec(); err != nil {
-		return nil, helpers.NewHTTPError(http.StatusInternalServerError, "error when tying to save user", err.Error())
+		return nil, utils.NewHTTPError(http.StatusInternalServerError, "error when tying to save user", err.Error())
 	}
 	return &user.Uuid, nil
 }
 
-func (User) Update(user *User) error {
+func (usersDao) Update(user *model.User) error {
 	if err := users_db.GetSession().Query(queryUpdateUser,
 		user.FirstName,
 		user.LastName,
 		user.Email,
 		user.Uuid,
 	).Exec(); err != nil {
-		return helpers.NewHTTPError(http.StatusInternalServerError, "error when trying to update UUID", err.Error())
+		return utils.NewHTTPError(http.StatusInternalServerError, "error when trying to update UUID", err.Error())
 	}
 	return nil
 }
 
-func (User) Delete(user *User) error {
+func (usersDao) Delete(user *model.User) error {
 	if err := users_db.GetSession().Query(queryDeleteUser,
 		user.Uuid,
 	).Exec(); err != nil {
-		return helpers.NewHTTPError(http.StatusInternalServerError, "error when trying to Delete UUID", err.Error())
+		return utils.NewHTTPError(http.StatusInternalServerError, "error when trying to Delete UUID", err.Error())
 	}
 	return nil
 }

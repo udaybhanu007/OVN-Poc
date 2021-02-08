@@ -1,9 +1,9 @@
-package domain
+package dao
 
 import (
 	"fmt"
 	"go-echo-poc/app/datasources/cassandra/users_db"
-	"go-echo-poc/app/helpers"
+	"go-echo-poc/app/utils"
 	"net/http"
 	"time"
 )
@@ -24,7 +24,7 @@ func (Log) Save(log *Log) error {
 		log.StatusCode,
 		log.Message,
 	).Exec(); err != nil {
-		return helpers.NewHTTPError(http.StatusInternalServerError, "error when tying to save log", err.Error())
+		return utils.NewHTTPError(http.StatusInternalServerError, "error when tying to save log", err.Error())
 	}
 	return nil
 }

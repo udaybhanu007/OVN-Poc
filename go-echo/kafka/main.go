@@ -10,15 +10,15 @@ import (
 	"strconv"
 	"time"
 
+	"go-echo-poc/app/dao"
 	"go-echo-poc/app/datasources/cassandra/users_db"
-	"go-echo-poc/app/domain"
 	"go-echo-poc/config"
 
 	"github.com/segmentio/kafka-go"
 )
 
 const (
-	topic         = "audit"
+	topic         = "test-cassandra"
 	brokerAddress = "localhost:9092"
 )
 
@@ -124,12 +124,12 @@ func consume(ctx context.Context) {
 		fmt.Println("received: ", string(msg.Value))
 		messages = append(messages, msg)
 
-		var logMsg domain.Log
+		var logMsg dao.Log
 		err2 := json.Unmarshal(msg.Value, &logMsg)
 		if err2 != nil {
 			fmt.Println(err2)
 		}
-		dbSaveErr := domain.LogDaoService.Save(&logMsg)
+		dbSaveErr := dao.LogDaoService.Save(&logMsg)
 
 		if dbSaveErr != nil {
 			fmt.Println("error saving log:", dbSaveErr)

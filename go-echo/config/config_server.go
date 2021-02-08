@@ -15,18 +15,8 @@ var (
 	AppConfiguration Configuration
 )
 
-type DBConfig struct {
-	CassandraHost     string `json:"cassandraHost"`
-	CassandraKeyspace string `json:"cassandraKeyspace"`
-}
-
-type Configuration struct {
-	DbConfig DBConfig `json:"dbConfig"`
-}
-
 func LoadConfiguration() (Configuration, error) {
 	var err error
-	var AppConfiguration Configuration
 	fmt.Println("Loading configuration ['" + ConfigProfile + "'] from server.")
 	AppConfiguration, err = loadConfigFromServer(AppConfiguration)
 	if err != nil {
