@@ -6,29 +6,39 @@ import (
 	"go-echo-poc/app/model"
 	"go-echo-poc/app/services"
 	"go-echo-poc/app/utils"
-	kfk "go-echo-poc/kafkaforuserdetails"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/gocql/gocql"
 	"github.com/labstack/echo/v4"
 )
 
 func CreateUser(c echo.Context) error {
+	fmt.Print("creating user")
 	user := new(model.User)
 	if err := c.Bind(&user); err != nil {
 		return utils.NewHTTPError(http.StatusBadRequest, "INVALID", "Invalid Json")
 	}
-	resultMessage := new(helpers.NotificationMessage)
-	/*go func() {
+	resultMessage := new(utils.NotificationMessage)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 		result, saveError := services.UsersService.CreateUser(*user)
 		if saveError != nil {
-			return saveError
+			return
 		}
+		fmt.Println(result)
 		resultMessage = result
-	}()*/
-	go kfk.ProduceKafkaForUserCreate(user)
-	return c.JSON(http.StatusCreated, result)
+	}()
+
+	go utils.ProduceKafkaForUserCreate(user)
+
+	wg.Wait()
+
+	return c.JSON(http.StatusCreated, resultMessage)
 }
 
 func GetUser(c echo.Context) error {

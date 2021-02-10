@@ -1,12 +1,11 @@
-package kafkaforuserdetails
+package utils
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
-	"go-echo-poc/app/domain"
+	"go-echo-poc/app/model"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -18,7 +17,8 @@ const (
 
 var ctx = context.Background()
 
-func ProduceKafkaForUserCreate(user *domain.User) {
+func ProduceKafkaForUserCreate(user *model.User) {
+	fmt.Print("entered producer")
 	msgBytes, marshalingErr := json.Marshal(user)
 	if marshalingErr != nil {
 		panic("could not write message " + marshalingErr.Error())
@@ -36,6 +36,4 @@ func ProduceKafkaForUserCreate(user *domain.User) {
 		panic("could not write message " + err.Error())
 	}
 	fmt.Print("produced successfully!")
-	// sleep for a second
-	time.Sleep(time.Second)
 }
